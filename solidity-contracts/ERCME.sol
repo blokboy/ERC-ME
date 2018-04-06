@@ -16,22 +16,12 @@ contract ERCME is MyNonFungibleToken {
     event HandleChange(uint256 profileId, string newHandle);
 
     function _checkUniqueName(string _name) internal view returns(bool) {
-        // Loops through our profiles array to check if the name we want to use is already taken
-        for (uint i = 0; i <= profiles.length; i++) {
-            if (keccak256(_name) == keccak256(profiles[i].name)) {
-                return false;
-            }
-        }
+        if (keccak256(profiles[msg.sender].name) == keccak256(_name)) { return false; }
         return true;
     }
 
-    function _checkUniqueHandle(string _handle) internal view returns(bool) {
-        // Loops through our profiles array to check if the handle we want to use is already taken
-        for (uint i = 0; i <= profiles.length; i++) {
-            if (keccak256(_handle) == keccak256(profiles[i].handle)) {
-                return false;
-            }
-        }
+    function _checkUniqueHandle(string _handle) internal view returns(bool) {        
+        if (keccak256(profiles[msg.sender].handle) == keccak256(_handle)) { return false; }
         return true;
     }
 

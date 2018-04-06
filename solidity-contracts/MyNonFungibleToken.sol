@@ -81,8 +81,8 @@ contract MyNonFungibleToken is ERC721 {
 
     function ownerOf(uint256 _profileId) external view returns (address owner) {
         owner = profileIndexToOwner[_profileId];
-
         require(owner != address(0));
+        return owner;
     }
 
     function approve(address _to, uint256 _profileId) external {

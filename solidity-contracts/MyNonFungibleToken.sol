@@ -8,6 +8,7 @@ contract MyNonFungibleToken is ERC721 {
 
     string public constant NAME = "ERC-ME";
     string public constant SYMBOL = "ME";
+    uint public profileCount = 0; // Keep a tally of profiles to eliminate use of Profiles array.
 
     struct Profile {
         string name; // Must be unique
@@ -21,10 +22,10 @@ contract MyNonFungibleToken is ERC721 {
         uint[] public following; // Tracks who this profile is following
         address createdBy;
         uint64 dateCreated;
+        uint profileId;
     }
-
-    Profile[] public profiles;
-
+    
+    mapping (address => Profile) public profiles; 
     mapping (uint256 => address) public profileIndexToOwner;
     mapping (address => uint8) public ownershipProfileCount;
     mapping (uint256 => address) public profileIndexToApproved; // Why is approval a thing, why is this important?
@@ -46,14 +47,11 @@ contract MyNonFungibleToken is ERC721 {
     }
 
     function _transfer(address _from, address _to, uint256 _profileId) internal {
+        require(_from != address(0));
         ownershipProfileCount[_to]++;
         profileIndexToOwner[_profileId] = _to;
-
-        if (_from != address(0)) {
-            ownershipProfileCount[_from]--;
-            delete profileIndexToApproved[_profileId];
-        }
-
+        ownershipProfileCount[_from]--;
+        delete profileIndexToApproved[_profileId];
         TransferEvent(_from, _to, _profileId);
     }
 
@@ -65,17 +63,16 @@ contract MyNonFungibleToken is ERC721 {
             followingCount: 0,
             createdBy: _creator,
             dateCreated: uint64(now)
+            profileId: uint256(keccak256(msg.sender, _creator, _name, _handle, now));
         });
-        profileId = profiles.push(profile) - 1;
-
+        profileIndexToOwner[profileId] = msg.sender;
         NewProfile(_creator, profileId);
-
         _transfer(0, _creator, profileId);
     }
 
 
     function totalSupply() public view returns (uint256) {
-        return profiles.length;
+        return profileCount;
     }
 
     function balanceOf(address _owner) public view returns (uint256) {
